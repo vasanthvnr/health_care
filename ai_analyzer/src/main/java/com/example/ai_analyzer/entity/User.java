@@ -22,4 +22,6 @@ public class User {
     private String password;
 
     private String resetToken;
+    @Column(name = "health_issues")  
+    private String healthIssues;
 }

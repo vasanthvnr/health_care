@@ -7,7 +7,13 @@ import '../app_routes.dart';
 
 class CameraScreen extends StatefulWidget {
   final String category;
-  const CameraScreen({super.key, required this.category});
+  final String healthIssues;
+
+  const CameraScreen({
+    super.key,
+    required this.category,
+    required this.healthIssues,
+  });
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -29,7 +35,8 @@ class _CameraScreenState extends State<CameraScreen> {
     _cameras = await availableCameras();
     _cameraController = CameraController(
       _cameras![0],
-      ResolutionPreset.medium,
+      ResolutionPreset.high,
+      enableAudio: false,
     );
     await _cameraController!.initialize();
     setState(() {
@@ -38,7 +45,9 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _takePicture() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized || _isProcessing) return;
+    if (_cameraController == null ||
+        !_cameraController!.value.isInitialized ||
+        _isProcessing) return;
 
     setState(() => _isProcessing = true);
 
@@ -63,21 +72,31 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _analyzeImage(File imageFile) async {
-  print('[CameraScreen] Sending image to API: ${imageFile.path}, category: ${widget.category}');
+    print(
+        '[CameraScreen] Sending image: ${imageFile.path}, category: ${widget.category}, healthIssues: ${widget.healthIssues}');
 
     try {
-      final result = await ApiService.analyzeImage(imageFile.path, widget.category);
+      final result = await ApiService.analyzeImage(
+        imageFile.path,
+        widget.category,
+        widget.healthIssues,
+      );
+
       if (!mounted) return;
-      Navigator.pushNamed(context, AppRoutes.results, arguments: {
-        'category': widget.category,
-        'imageUri': imageFile.path,
-        'results': result['data'], 
-      });
+      Navigator.pushNamed(
+        context,
+        AppRoutes.results,
+        arguments: {
+          'category': widget.category,
+          'imageUri': imageFile.path,
+          'results': result['data'],
+        },
+      );
     } catch (e) {
       debugPrint("Error analyzing image: $e");
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to analyze image')),
+        const SnackBar(content: Text('Failed to analyze image')),
       );
     }
   }
@@ -93,36 +112,98 @@ class _CameraScreenState extends State<CameraScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text('Scan ${widget.category} Ingredients'),
-        backgroundColor: Colors.black,
+        title: Text(
+          'Scan ${widget.category}',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Colors.teal,
+        centerTitle: true,
       ),
       body: _isCameraInitialized
           ? Stack(
               children: [
-                CameraPreview(_cameraController!),
+                Positioned.fill(child: CameraPreview(_cameraController!)),
+
+                // Processing overlay
                 if (_isProcessing)
-                  const Center(child: CircularProgressIndicator(color: Colors.white)),
-                Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.photo_library, color: Colors.white, size: 30),
-                        onPressed: _isProcessing ? null : _pickFromGallery,
+                  Container(
+                    color: Colors.black54,
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(color: Colors.white),
+                          SizedBox(height: 12),
+                          Text(
+                            "Analyzing...",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.camera_alt, color: Colors.white, size: 40),
-                        onPressed: _isProcessing ? null : _takePicture,
+                    ),
+                  ),
+
+                // Bottom controls
+                Positioned(
+                  bottom: 30,
+                  left: 20,
+                  right: 20,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildCircleButton(
+                        icon: Icons.photo_library,
+                        onTap: _isProcessing ? null : _pickFromGallery,
+                        label: "Gallery",
+                      ),
+                      _buildCircleButton(
+                        icon: Icons.camera_alt,
+                        size: 60,
+                        onTap: _isProcessing ? null : _takePicture,
+                        label: "Capture",
                       ),
                     ],
                   ),
                 ),
               ],
             )
-          : const Center(child: CircularProgressIndicator(color: Colors.white)),
+          : const Center(
+              child: CircularProgressIndicator(color: Colors.teal),
+            ),
+    );
+  }
+
+  /// Reusable circular button with label
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback? onTap,
+    String? label,
+    double size = 50,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(size),
+          onTap: onTap,
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: onTap == null ? Colors.grey : Colors.teal,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: size * 0.6),
+          ),
+        ),
+        if (label != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ]
+      ],
     );
   }
 }

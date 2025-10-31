@@ -13,7 +13,7 @@ class CustomInputField extends StatelessWidget {
     required this.label,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
-    this.prefixIcon,
+    this.prefixIcon, required String hintText,
   });
 
   @override

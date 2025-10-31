@@ -102,7 +102,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
             const SizedBox(height: 24),
             if (!otpSent) ...[
-              CustomInputField(controller: phoneController, label: 'Mobile Number'),
+              CustomInputField(controller: phoneController, label: 'Mobile Number', hintText: 'Mobile number',),
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
@@ -110,7 +110,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 child: const Text('Send OTP'),
               ),
             ] else if (!otpVerified) ...[
-              CustomInputField(controller: otpController, label: 'Enter OTP'),
+              CustomInputField(controller: otpController, label: 'Enter OTP', hintText: 'OTP',),
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
@@ -118,9 +118,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 child: const Text('Verify OTP'),
               ),
             ] else ...[
-              CustomInputField(controller: newPasswordController, label: 'New Password', obscureText: true),
+              CustomInputField(controller: newPasswordController, label: 'New Password', obscureText: true, hintText: 'New Password',),
               const SizedBox(height: 16),
-              CustomInputField(controller: confirmPasswordController, label: 'Confirm Password', obscureText: true),
+              CustomInputField(controller: confirmPasswordController, label: 'Confirm Password', obscureText: true, hintText: 'Confirm Password',),
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green),

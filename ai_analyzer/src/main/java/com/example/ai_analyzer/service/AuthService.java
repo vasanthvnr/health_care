@@ -17,67 +17,77 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
-    private final String SECRET_KEY = "secret"; // Use a secure key in production
+  private final String SECRET_KEY = "secret"; // Use a secure key in production
 
-    public AuthResponse signup(SignupRequest request) {
-        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
-        if (existingUser.isPresent()) {
-            return new AuthResponse("Email already in use", null);
-        }
-
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
-
-        userRepository.save(user);
-
-        String token = generateToken(user.getEmail());
-
-        return new AuthResponse("User registered successfully", token);
+  // Signup: creates user and returns token/email for login
+  public AuthResponse signup(SignupRequest request) {
+    Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+    if (existingUser.isPresent()) {
+      // User already exists, return null token/email
+      return new AuthResponse(null, null);
     }
 
-    public AuthResponse login(AuthRequest request) {
-        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
-        if (userOpt.isEmpty()) {
-            return new AuthResponse("Invalid credentials", null);
-        }
+    User user = User.builder()
+        .email(request.getEmail())
+        .password(passwordEncoder.encode(request.getPassword()))
+        .healthIssues(request.getHealthIssues()) // stored in DB
+        .build();
 
-        User user = userOpt.get();
+    userRepository.save(user);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return new AuthResponse("Invalid credentials", null);
-        }
+    // Generate token for login purposes
+    String token = generateToken(user.getEmail());
 
-        String token = generateToken(user.getEmail());
+    // Return only token and email
+    return new AuthResponse(token, user.getEmail());
+  }
 
-        return new AuthResponse("Login successful", token);
+  // Login: validates credentials and returns token/email
+  public AuthResponse login(AuthRequest request) {
+    Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+    if (userOpt.isEmpty()) {
+      // Invalid credentials
+      return new AuthResponse(null, null);
     }
 
-    public String resetPassword(ResetPasswordRequest request) {
-        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
-        if (userOpt.isEmpty()) {
-            return "User not found";
-        }
+    User user = userOpt.get();
 
-        User user = userOpt.get();
-        String resetToken = UUID.randomUUID().toString();
-        user.setResetToken(resetToken);
-        userRepository.save(user);
-
-        // In a real application, send this token via email
-        return "Password reset token: " + resetToken;
+    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+      // Invalid credentials
+      return new AuthResponse(null, null);
     }
 
-    private String generateToken(String email) {
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
-                .compact();
+    String token = generateToken(user.getEmail());
+
+    return new AuthResponse(token, user.getEmail());
+  }
+
+  // Reset password: generates token for password reset
+  public String resetPassword(ResetPasswordRequest request) {
+    Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+    if (userOpt.isEmpty()) {
+      return "User not found";
     }
+
+    User user = userOpt.get();
+    String resetToken = UUID.randomUUID().toString();
+    user.setResetToken(resetToken);
+    userRepository.save(user);
+
+    // In a real application, send this token via email
+    return "Password reset token: " + resetToken;
+  }
+
+  // Generate JWT token
+  private String generateToken(String email) {
+    return Jwts.builder()
+        .setSubject(email)
+        .setIssuedAt(new Date())
+        .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
+        .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+        .compact();
+  }
 }

@@ -22,7 +22,8 @@ public class AnalysisController {
     @PostMapping("/image")
     public ResponseEntity<Map<String, Object>> analyzeImage(
             @RequestParam("image") MultipartFile image,
-            @RequestParam(value = "category", required = false) String category) {
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "healthIssues", required = false) String healthIssues ){
 
         Map<String, Object> response = new HashMap<>();
         try {
@@ -34,8 +35,9 @@ public class AnalysisController {
 
             System.out.println("Received image: " + image.getOriginalFilename());
             System.out.println("Category: " + category);
+            System.out.println("Health Issues: " + healthIssues);  
 
-            Map<String, Object> result = analysisService.analyzeImage(image, category);
+            Map<String, Object> result = analysisService.analyzeImage(image, category, healthIssues);
             response.put("status", "success");
             response.put("data", result);
             return ResponseEntity.ok(response);

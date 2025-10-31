@@ -15,6 +15,7 @@ class SignupScreen extends StatelessWidget {
     String phone,
     String password,
     String otp,
+    String healthIssues, // <-- Added
   ) async {
     final verifyUrl = Uri.parse(
         'http://10.0.2.2:8080/api/auth/verify-otp'); // Replace with your IP
@@ -47,6 +48,7 @@ class SignupScreen extends StatelessWidget {
           'email': email,
           'phoneNumber': phone,
           'password': password,
+          'healthIssues': healthIssues, // <-- Added to request
         }),
       );
 
@@ -61,7 +63,6 @@ class SignupScreen extends StatelessWidget {
       _showErrorDialog(context, 'Error: $e');
     }
   }
-
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
@@ -84,8 +85,9 @@ class SignupScreen extends StatelessWidget {
     final nameController = TextEditingController();
     final emailController = TextEditingController();
     final phoneController = TextEditingController();
-    final otpController = TextEditingController(); // Not used yet
+    final otpController = TextEditingController();
     final passwordController = TextEditingController();
+    final healthIssuesController = TextEditingController(); // <-- Added
 
     return Scaffold(
       backgroundColor: Colors.green[50],
@@ -104,16 +106,18 @@ class SignupScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 30),
-              CustomInputField(controller: nameController, label: 'Name'),
+              CustomInputField(controller: nameController, label: 'Name', hintText: 'Enter Name',),
               const SizedBox(height: 12),
-              CustomInputField(controller: emailController, label: 'Email'),
+              CustomInputField(controller: emailController, label: 'Email', hintText: 'Enter Email',),
               const SizedBox(height: 12),
-              CustomInputField(controller: phoneController, label: 'Phone Number'),
+              CustomInputField(
+                  controller: phoneController, label: 'Phone Number', hintText: 'Enter Mobile Number',),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: CustomInputField(controller: otpController, label: 'OTP'),
+                    child: CustomInputField(
+                        controller: otpController, label: 'OTP', hintText: 'Enter OTP',),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
@@ -125,8 +129,8 @@ class SignupScreen extends StatelessWidget {
                         return;
                       }
 
-                      final otpUrl = Uri.parse(
-                          'http://10.0.2.2:8080/api/auth/send-otp');
+                      final otpUrl =
+                          Uri.parse('http://10.0.2.2:8080/api/auth/send-otp');
 
                       try {
                         final response = await http.post(
@@ -148,18 +152,38 @@ class SignupScreen extends StatelessWidget {
                     },
                     child: const Text('Send OTP'),
                   ),
-
                 ],
               ),
               const SizedBox(height: 12),
-              CustomInputField(controller: passwordController, label: 'Password', obscureText: true),
+              CustomInputField(
+                controller: passwordController,
+                label: 'Password',
+                obscureText: true, hintText: 'enter password',
+              ),
+              const SizedBox(height: 12),
+              CustomInputField(
+                controller: healthIssuesController,
+                label: 'Any Health Issues?', hintText: 'e.g., Asthma, Allergy, Diabetes',
+              ),
               const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 14),
                 ),
                 onPressed: () {
+                  if (nameController.text.trim().isEmpty ||
+                      emailController.text.trim().isEmpty ||
+                      phoneController.text.trim().isEmpty ||
+                      otpController.text.trim().isEmpty ||
+                      passwordController.text.trim().isEmpty ||
+                      healthIssuesController.text.trim().isEmpty) {
+                    _showErrorDialog(context,
+                        'All fields are required, including Health Issues');
+                    return;
+                  }
+
                   _registerUser(
                     context,
                     nameController.text,
@@ -167,6 +191,7 @@ class SignupScreen extends StatelessWidget {
                     phoneController.text,
                     passwordController.text,
                     otpController.text,
+                    healthIssuesController.text, // <-- Mandatory check
                   );
                 },
                 child: const Text('Register'),

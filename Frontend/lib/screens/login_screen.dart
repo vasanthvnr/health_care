@@ -79,9 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-              CustomInputField(controller: emailController, label: 'Email'),
+              CustomInputField(controller: emailController, label: 'Email', hintText: 'Enter email',),
               const SizedBox(height: 16),
-              CustomInputField(controller: passwordController, label: 'Password', obscureText: true),
+              CustomInputField(controller: passwordController, label: 'Password', obscureText: true, hintText: 'Password',),
               const SizedBox(height: 20),
               isLoading
                   ? const CircularProgressIndicator()

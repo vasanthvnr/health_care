@@ -33,7 +33,7 @@ class AppRoutes {
       case camera:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
-          builder: (_) => CameraScreen(category: args['category']),
+          builder: (_) => CameraScreen(category: args['category'], healthIssues: '',),
         );
 
       case results:

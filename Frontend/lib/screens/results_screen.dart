@@ -14,20 +14,23 @@ class ResultScreen extends StatelessWidget {
     required this.results,
   });
 
-  /// Determine overall product safety level based on ingredient evaluations
   String _calculateOverallSafety(List ingredients) {
     bool hasBad = false;
     bool hasModerate = false;
+    bool hasConflict = false;
 
     for (var ing in ingredients) {
       final eval = (ing['evaluation'] ?? '').toString().toLowerCase();
-      if (eval == 'bad') return 'bad';
+      if (eval == 'bad') hasBad = true;
       if (eval == 'moderate') hasModerate = true;
+      if (ing['notSuitable'] == true) hasConflict = true;
     }
-    return hasModerate ? 'moderate' : 'good';
+
+    if (hasBad || hasConflict) return 'bad';
+    if (hasModerate) return 'moderate';
+    return 'good';
   }
 
-  /// Map safety level to visual info
   Map<String, dynamic> _getSafetyInfo(String level) {
     switch (level.toLowerCase()) {
       case 'good':
@@ -49,7 +52,7 @@ class ResultScreen extends StatelessWidget {
         return {
           'label': 'Unsafe Product',
           'description':
-              'Some ingredients are unsafe or toxic. Use with caution.',
+              'Some ingredients are unsafe or not suitable for your health issues.',
           'color': Colors.red,
           'icon': Icons.dangerous,
         };
@@ -63,8 +66,8 @@ class ResultScreen extends StatelessWidget {
     }
   }
 
-  /// Get color for individual ingredient based on evaluation
-  Color _getIngredientColor(String safety) {
+  Color _getIngredientColor(String safety, bool notSuitable) {
+    if (notSuitable) return Colors.red; // Highlight conflict
     switch (safety.toLowerCase()) {
       case 'good':
         return Colors.green;
@@ -140,11 +143,13 @@ class ResultScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Ingredient List Display
+            // Ingredient List Display with health issues comparison
             ...ingredients.map<Widget>((ing) {
               final String name = ing['ingredient'] ?? 'Unknown';
               final String safety = ing['evaluation'] ?? 'Unknown';
-              final color = _getIngredientColor(safety);
+              final bool notSuitable = ing['notSuitable'] ?? false;
+              final String reason = ing['reason'] ?? '';
+              final color = _getIngredientColor(safety, notSuitable);
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
@@ -154,36 +159,72 @@ class ResultScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   color: color.withOpacity(0.1),
                 ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          safety.toUpperCase(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                          name,
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis, 
+                        ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            safety.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                        if (notSuitable) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'NOT FOR YOU',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ]
+                      ],
+                    ),
+                    if (notSuitable && reason.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          reason,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.red,
+                          ),
+                        ),
+                      )
+                  ],
                 ),
               );
             }).toList(),
