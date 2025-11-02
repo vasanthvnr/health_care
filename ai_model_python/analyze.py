@@ -6,8 +6,9 @@ import google.generativeai as genai
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 
-app = Flask(__name__)
 load_dotenv()
+app = Flask(__name__)
+
 
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
