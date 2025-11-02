@@ -4,3 +4,5 @@ uvicorn
 easyocr
 python-dotenv
 google-generativeai
+pytesseract
+Pillow
