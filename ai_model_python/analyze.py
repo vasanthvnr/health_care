@@ -16,9 +16,9 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-2.0-flash')
-reader = easyocr.Reader(['en'], gpu=False)
+
 def extract_text_from_image(image_file):
-   
+    reader = easyocr.Reader(['en'], gpu=False)
     result = reader.readtext(image_file.read())
     combined_text = " ".join([text for _, text, _ in result])
     return combined_text.strip()
