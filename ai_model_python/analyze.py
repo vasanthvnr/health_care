@@ -5,8 +5,6 @@ import easyocr
 import google.generativeai as genai
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
-from PIL import Image
-import pytesseract
 
 load_dotenv()
 app = Flask(__name__)
@@ -20,10 +18,10 @@ genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-2.0-flash')
 
 def extract_text_from_image(image_file):
-    image = Image.open(image_file)
-    text = pytesseract.image_to_string(image)
-    return text.strip()
-
+    reader = easyocr.Reader(['en'], gpu=False)
+    result = reader.readtext(image_file.read())
+    combined_text = " ".join([text for _, text, _ in result])
+    return combined_text.strip()
 
 def evaluate_ingredient(ingredients_str, health_issues):
     prompt = (
