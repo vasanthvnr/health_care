@@ -5,6 +5,8 @@ import easyocr
 import google.generativeai as genai
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
+port = int(os.environ.get("PORT", 10000))
+app.run(host="0.0.0.0", port=port)
 
 app = Flask(__name__)
 load_dotenv()
