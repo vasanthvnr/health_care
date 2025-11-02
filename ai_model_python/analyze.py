@@ -18,10 +18,18 @@ genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-2.0-flash')
 
 def extract_text_from_image(image_file):
-    reader = easyocr.Reader(['en'], gpu=False)
-    result = reader.readtext(image_file.read())
-    combined_text = " ".join([text for _, text, _ in result])
-    return combined_text.strip()
+    image_bytes = image_file.read()
+    # Create Gemini Generative Model request
+    prompt = "Extract all text from this image. Return only the text, with no extra explanation or formatting."
+    result = model.generate_content([
+        prompt,
+        {
+            "mime_type": "image/png",  # Or "image/jpeg", depending on your file type
+            "data": image_bytes
+        }
+    ])
+    # Just return the text output
+    return result.text.strip()
 
 def evaluate_ingredient(ingredients_str, health_issues):
     prompt = (
