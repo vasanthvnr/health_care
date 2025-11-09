@@ -12,33 +12,13 @@ class SignupScreen extends StatelessWidget {
     BuildContext context,
     String name,
     String email,
-    String phone,
     String password,
-    String otp,
-    String healthIssues, // <-- Added
+    String healthIssues,
   ) async {
-    final verifyUrl = Uri.parse(
-        'http://10.0.2.2:8080/api/auth/verify-otp'); // Replace with your IP
-
     try {
-      // Step 1: Verify OTP
-      final otpResponse = await http.post(
-        verifyUrl,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'phoneNumber': phone,
-          'otp': otp,
-        }),
-      );
-
-      if (otpResponse.statusCode != 200) {
-        _showErrorDialog(context, 'OTP verification failed');
-        return;
-      }
-
-      // Step 2: Proceed with registration
       final registerUrl = Uri.parse(
-          'http://10.0.2.2:8080/api/auth/signup'); // Replace with your IP
+        'http://10.0.2.2:8080/api/auth/signup', // Update with your deploy URL if needed
+      );
 
       final response = await http.post(
         registerUrl,
@@ -46,9 +26,8 @@ class SignupScreen extends StatelessWidget {
         body: jsonEncode({
           'name': name,
           'email': email,
-          'phoneNumber': phone,
           'password': password,
-          'healthIssues': healthIssues, // <-- Added to request
+          'healthIssues': healthIssues,
         }),
       );
 
@@ -84,10 +63,8 @@ class SignupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final nameController = TextEditingController();
     final emailController = TextEditingController();
-    final phoneController = TextEditingController();
-    final otpController = TextEditingController();
     final passwordController = TextEditingController();
-    final healthIssuesController = TextEditingController(); // <-- Added
+    final healthIssuesController = TextEditingController();
 
     return Scaffold(
       backgroundColor: Colors.green[50],
@@ -106,64 +83,29 @@ class SignupScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 30),
-              CustomInputField(controller: nameController, label: 'Name', hintText: 'Enter Name',),
-              const SizedBox(height: 12),
-              CustomInputField(controller: emailController, label: 'Email', hintText: 'Enter Email',),
+              CustomInputField(
+                controller: nameController,
+                label: 'Name',
+                hintText: 'Enter Name',
+              ),
               const SizedBox(height: 12),
               CustomInputField(
-                  controller: phoneController, label: 'Phone Number', hintText: 'Enter Mobile Number',),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomInputField(
-                        controller: otpController, label: 'OTP', hintText: 'Enter OTP',),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final phone = phoneController.text.trim();
-
-                      if (phone.isEmpty) {
-                        _showErrorDialog(context, 'Phone number is required');
-                        return;
-                      }
-
-                      final otpUrl =
-                          Uri.parse('http://10.0.2.2:8080/api/auth/send-otp');
-
-                      try {
-                        final response = await http.post(
-                          otpUrl,
-                          headers: {'Content-Type': 'application/json'},
-                          body: jsonEncode({'phoneNumber': phone}),
-                        );
-
-                        if (response.statusCode == 200) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('OTP Sent')),
-                          );
-                        } else {
-                          _showErrorDialog(context, 'Failed to send OTP');
-                        }
-                      } catch (e) {
-                        _showErrorDialog(context, 'Error sending OTP: $e');
-                      }
-                    },
-                    child: const Text('Send OTP'),
-                  ),
-                ],
+                controller: emailController,
+                label: 'Email',
+                hintText: 'Enter Email',
               ),
               const SizedBox(height: 12),
               CustomInputField(
                 controller: passwordController,
                 label: 'Password',
-                obscureText: true, hintText: 'enter password',
+                obscureText: true,
+                hintText: 'Enter Password',
               ),
               const SizedBox(height: 12),
               CustomInputField(
                 controller: healthIssuesController,
-                label: 'Any Health Issues?', hintText: 'e.g., Asthma, Allergy, Diabetes',
+                label: 'Any Health Issues?',
+                hintText: 'e.g., Asthma, Allergy, Diabetes',
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -175,12 +117,10 @@ class SignupScreen extends StatelessWidget {
                 onPressed: () {
                   if (nameController.text.trim().isEmpty ||
                       emailController.text.trim().isEmpty ||
-                      phoneController.text.trim().isEmpty ||
-                      otpController.text.trim().isEmpty ||
                       passwordController.text.trim().isEmpty ||
                       healthIssuesController.text.trim().isEmpty) {
-                    _showErrorDialog(context,
-                        'All fields are required, including Health Issues');
+                    _showErrorDialog(
+                        context, 'All fields are required, including Health Issues');
                     return;
                   }
 
@@ -188,10 +128,8 @@ class SignupScreen extends StatelessWidget {
                     context,
                     nameController.text,
                     emailController.text,
-                    phoneController.text,
                     passwordController.text,
-                    otpController.text,
-                    healthIssuesController.text, // <-- Mandatory check
+                    healthIssuesController.text,
                   );
                 },
                 child: const Text('Register'),
