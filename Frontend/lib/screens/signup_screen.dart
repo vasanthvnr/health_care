@@ -17,7 +17,7 @@ class SignupScreen extends StatelessWidget {
   ) async {
     try {
       final registerUrl = Uri.parse(
-        'http://10.0.2.2:8080/api/auth/signup', // Update with your deploy URL if needed
+        'https://mista-java-backend.onrender.com/api/auth/signup', // Update with your deploy URL if needed
       );
 
       final response = await http.post(
