@@ -11,7 +11,7 @@ class ApiService {
 
       // Emulator: localhost → 10.0.2.2 (for Android)
       final uri = Uri.parse(
-          'http://10.0.2.2:8080/api/analyze/image'); // Change to your IP for physical devices
+          'https://mista-java-backend.onrender.com/api/analyze/image'); // Change to your IP for physical devices
 
       final request = http.MultipartRequest('POST', uri)
         ..fields['category'] = category
