@@ -65,22 +65,6 @@ public class AuthService {
     return new AuthResponse(token, user.getEmail());
   }
 
-  // Reset password: generates token for password reset
-  public String resetPassword(ResetPasswordRequest request) {
-    Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
-    if (userOpt.isEmpty()) {
-      return "User not found";
-    }
-
-    User user = userOpt.get();
-    String resetToken = UUID.randomUUID().toString();
-    user.setResetToken(resetToken);
-    userRepository.save(user);
-
-    // In a real application, send this token via email
-    return "Password reset token: " + resetToken;
-  }
-
   // Generate JWT token
   private String generateToken(String email) {
     return Jwts.builder()
