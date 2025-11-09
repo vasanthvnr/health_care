@@ -93,13 +93,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: loginUser,
                       child: const Text('Login'),
                     ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.resetPassword);
-                },
-                child: const Text('Forgot Password?'),
-              ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
