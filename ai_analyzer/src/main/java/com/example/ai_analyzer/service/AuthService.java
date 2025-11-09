@@ -1,6 +1,8 @@
 package com.example.ai_analyzer.service;
 
-import com.example.ai_analyzer.dto.*;
+import com.example.ai_analyzer.dto.AuthRequest;
+import com.example.ai_analyzer.dto.AuthResponse;
+import com.example.ai_analyzer.dto.SignupRequest;
 import com.example.ai_analyzer.entity.User;
 import com.example.ai_analyzer.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
@@ -11,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,8 @@ public class AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  private final String SECRET_KEY = "secret"; // Use a secure key in production
+  // Use a secure key from environment variables or config in production
+  private final String SECRET_KEY = "secret";
 
   // Signup: creates user and returns token/email for login
   public AuthResponse signup(SignupRequest request) {
@@ -33,15 +35,14 @@ public class AuthService {
     User user = User.builder()
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
-        .healthIssues(request.getHealthIssues()) // stored in DB
+        .healthIssues(request.getHealthIssues())
         .build();
 
     userRepository.save(user);
 
-    // Generate token for login purposes
+    // Generate JWT token
     String token = generateToken(user.getEmail());
 
-    // Return only token and email
     return new AuthResponse(token, user.getEmail());
   }
 
@@ -49,14 +50,12 @@ public class AuthService {
   public AuthResponse login(AuthRequest request) {
     Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
     if (userOpt.isEmpty()) {
-      // Invalid credentials
       return new AuthResponse(null, null);
     }
 
     User user = userOpt.get();
 
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-      // Invalid credentials
       return new AuthResponse(null, null);
     }
 
@@ -65,7 +64,7 @@ public class AuthService {
     return new AuthResponse(token, user.getEmail());
   }
 
-  // Generate JWT token
+  // JWT token generator for 24 hours validity
   private String generateToken(String email) {
     return Jwts.builder()
         .setSubject(email)
