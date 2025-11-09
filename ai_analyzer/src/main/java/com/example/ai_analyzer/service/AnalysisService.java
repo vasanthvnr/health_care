@@ -14,7 +14,7 @@ import java.util.*;
 @Service
 public class AnalysisService {
 
-    private final String PYTHON_API_URL = "http://127.0.0.1:5000/analyze";
+    private final String PYTHON_API_URL = "https://mista-python-backend.onrender.com/analyze";
 
     public Map<String, Object> analyzeImage(MultipartFile image, String category, String healthIssues) {
         Map<String, Object> responseMap = new HashMap<>();
