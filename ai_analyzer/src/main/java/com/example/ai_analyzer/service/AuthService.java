@@ -18,7 +18,6 @@ import java.util.Optional;
 public class AuthService {
 
   private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
 
   // Use a secure key from environment variables or config in production
   private final String SECRET_KEY = "secret";
@@ -33,7 +32,7 @@ public class AuthService {
 
     User user = User.builder()
         .email(request.getEmail())
-        .password(passwordEncoder.encode(request.getPassword()))
+        .password(request.getPassword()) // Plain text storage
         .healthIssues(request.getHealthIssues())
         .build();
 
@@ -54,7 +53,7 @@ public class AuthService {
 
     User user = userOpt.get();
 
-    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+    if (!request.getPassword().equals(user.getPassword())) {
       return new AuthResponse(null, null);
     }
 
