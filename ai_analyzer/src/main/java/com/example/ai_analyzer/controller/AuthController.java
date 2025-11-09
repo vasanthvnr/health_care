@@ -34,21 +34,5 @@ public class AuthController {
         return ResponseEntity.ok(message);
     }
 
-    // ➕ NEW: Send OTP
-    @PostMapping("/send-otp")
-    public ResponseEntity<String> sendOtp(@RequestBody OtpRequest request) {
-        otpService.generateOtp(request.getPhoneNumber());
-        return ResponseEntity.ok("OTP sent successfully");
-    }
-
-    // ➕ NEW: Verify OTP
-    @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtp(@RequestBody OtpRequest request) {
-        boolean isValid = otpService.verifyOtp(request.getPhoneNumber(), request.getOtp());
-        if (isValid) {
-            return ResponseEntity.ok("OTP verified successfully");
-        } else {
-            return ResponseEntity.badRequest().body("Invalid OTP");
-        }
-    }
+   
 }
