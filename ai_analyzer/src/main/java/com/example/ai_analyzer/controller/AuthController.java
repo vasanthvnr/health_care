@@ -1,8 +1,9 @@
 package com.example.ai_analyzer.controller;
 
-import com.example.ai_analyzer.dto.*;
+import com.example.ai_analyzer.dto.AuthRequest;
+import com.example.ai_analyzer.dto.AuthResponse;
+import com.example.ai_analyzer.dto.SignupRequest;
 import com.example.ai_analyzer.service.AuthService;
-import com.example.ai_analyzer.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,4 @@ public class AuthController {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
-
-   
 }
